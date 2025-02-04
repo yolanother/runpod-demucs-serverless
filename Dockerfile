@@ -30,4 +30,6 @@ RUN python3.11 -m pip install -U --no-cache-dir 'numpy<2'
 # Add src files (Worker Template)
 ADD src .
 
+RUN python3.11 -u /downloadmodel.py
+
 CMD python3.11 -u /handler.py
