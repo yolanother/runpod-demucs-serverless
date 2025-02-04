@@ -1,7 +1,9 @@
 """ Example handler file. """
 
 import runpod
+from runpod.serverless.utils import rp_upload
 import demucs.api
+import os
 
 # If your handler runs inference on a model, load the model here.
 # You will want models to be loaded into memory before starting serverless.
@@ -48,18 +50,38 @@ def handler(job):
             "files": []
         }
 
+        # if there is a job_input['id'] then use that for the guid, otherwise generate one
+        if 'id' in job_input:
+            data["guid"] = job_input['id']
+        else:
+            import uuid
+            data["guid"] = str(uuid.uuid4())
+
         # Remember to create the destination folder before calling `save_audio`
         # Or you are likely to recieve `FileNotFoundError`
         for stem in separated:
             source = separated[stem]
             log(f"Saving separated audio file {stem}...")
             demucs.api.save_audio(source, f"{stem}.mp3", samplerate=separator.samplerate)
-            # Encode the file to base64 and add it to the files list {"filename": "file.mp3", "data": "base64encoded"}
-            with open(f"{stem}.mp3", "rb") as f:
+
+            if os.environ.get("BUCKET_ENDPOINT_URL"):
+                log(f"Uploading {stem}.mp3 to bucket...")
+                url = rp_upload.upload_file_to_bucket(f"{data['guid']}.{stem}.mp3", f"{stem}.mp3")
                 data["files"].append({
                     "filename": f"{stem}.mp3",
                     "data": f.read().hex()
                 })
+
+            # Encode the file to base64 and add it to the files list {"filename": "file.mp3", "data": "base64encoded"}
+            with open(f"{stem}.mp3", "rb") as f:
+                log(f"Encoding {stem}.mp3 to base64...")
+                data["files"].append({
+                    "filename": f"{stem}.mp3",
+                    "data": f.read().hex()
+                })
+
+        # log the data as formatted json string
+        log(f"Returning data: {data}")
 
         return data
     else:
