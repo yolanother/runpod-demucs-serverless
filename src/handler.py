@@ -44,8 +44,7 @@ def handler(job):
         origin, separated = separator.separate_audio_file(input_file)
 
         data = {
-            "origin": origin,
-            "files": separated,
+            "url": url,
             "files": []
         }
 
