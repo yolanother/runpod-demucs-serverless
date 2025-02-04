@@ -12,10 +12,10 @@ FROM runpod/base:0.4.0-cuda11.8.0
 # RUN /bin/bash /setup.sh && \
 #     rm /setup.sh
 
-
 # Python dependencies
 COPY builder/requirements.txt /requirements.txt
 RUN python3.11 -m pip install --upgrade pip && \
+    python3.11 -m pip install --upgrade --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121 && \
     python3.11 -m pip install --upgrade -r /requirements.txt --no-cache-dir && \
     rm /requirements.txt
 
