@@ -67,18 +67,19 @@ def handler(job):
             if os.environ.get("BUCKET_ENDPOINT_URL"):
                 log(f"Uploading {stem}.mp3 to bucket...")
                 url = rp_upload.upload_file_to_bucket(f"{data['guid']}.{stem}.mp3", f"{stem}.mp3")
+                log(f"Uploaded {stem}.mp3 to {url}")
                 data["files"].append({
                     "filename": f"{stem}.mp3",
-                    "data": f.read().hex()
+                    "url": url
                 })
-
-            # Encode the file to base64 and add it to the files list {"filename": "file.mp3", "data": "base64encoded"}
-            with open(f"{stem}.mp3", "rb") as f:
-                log(f"Encoding {stem}.mp3 to base64...")
-                data["files"].append({
-                    "filename": f"{stem}.mp3",
-                    "data": f.read().hex()
-                })
+            else:
+                # Encode the file to base64 and add it to the files list {"filename": "file.mp3", "data": "base64encoded"}
+                with open(f"{stem}.mp3", "rb") as f:
+                    log(f"Encoding {stem}.mp3 to base64...")
+                    data["files"].append({
+                        "filename": f"{stem}.mp3",
+                        "data": f.read().hex()
+                    })
 
         # log the data as formatted json string
         log(f"Returning data: {data}")
